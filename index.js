@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 
 const app = express();
 const port = 5000;
@@ -36,6 +37,44 @@ async function run(){
             console.log(newProduct);
             const result = await productsCollection.insertOne(newProduct);
             res.json(result)
+        })
+        
+        // UPDATE API
+        app.put('/products/:id', async (req, res)=>{
+            const id = req.params.id;
+            // console.log(req.body);
+            const updatedProduct = req.body;
+            console.log(updatedProduct)
+            const options = { upsert: true };
+            const filter = {_id: ObjectId(id)};
+            const updateDoc = {
+                $set: {
+                  name: updatedProduct.name,
+                  price: updatedProduct.price,
+                  quantity: updatedProduct.quantity,
+                },
+              };
+            const result = await productsCollection.updateOne(filter,updateDoc,options);
+            console.log(result);
+            // const updatedProduct = req.body;
+            res.json(result)
+        })
+
+        //DELETE API
+        app.delete('/products/:id', async (req, res)=>{
+            const id = req.params.id;
+            console.log('deleting product with an id ', id)
+            const query = {_id: ObjectId(id)};
+            const result = await productsCollection.deleteOne(query);
+            res.json(result);
+        })
+
+        // UPDATE API
+        app.get('/products/:id', async (req, res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await productsCollection.findOne(query);
+            res.send(result)
         })
 
         // const pro = {name: 'phone', price: 210};
